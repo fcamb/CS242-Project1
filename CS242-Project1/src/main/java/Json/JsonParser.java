@@ -2,115 +2,219 @@ package Json;
 import java.util.List;
 import java.util.ArrayList;
 
-public class JsonParser
+/**
+ *      class JsonParser
+ *      implements a recursive descent parser for JSON data
+ *      @author Frank Cambria
+ */
+class JsonParser
 {
+        // list of tokens to parse
         private JsonTokens tokens;
+        // result of the parsing process
         private JsonValue parsedResult;
+        // current position in the token list
         private int pos;
 
+        /**
+         *       public JsonParser()
+         *       base constructor, initializes position to 0
+         */
         public JsonParser()
         {
                 this.pos = 0;
         }
 
+        /**
+         *       public JsonParser(JsonTokens tokens)
+         *       constructor with tokens parameter
+         *       @param JsonTokens tokens
+         */
         public JsonParser(JsonTokens tokens)
         {
                 this.tokens = tokens;
                 this.pos = 0;
         }
 
+        /**
+         *       private void AdvancePos()
+         *       increments the current position in the token list
+         *       @return void
+         */
         private void AdvancePos()
         {
                 pos++;
         }
 
+        /**
+         *       private JsonToken CurrentToken()
+         *       returns the token at the current position
+         *       @return JsonToken
+         */
         private JsonToken CurrentToken()
         {
                 return tokens.Token(pos);
         }
 
+        /**
+         *       private JsonTokenType CurrentTokenType()
+         *       returns the type of the current token
+         *       @return JsonTokenType
+         */
         private JsonTokenType CurrentTokenType()
         {
                 return CurrentToken().TokenType();
         }
 
+        /**
+         *       private String CurrentTokenValue()
+         *       returns the value of the current token
+         *       @return String
+         */
         private String CurrentTokenValue()
         {
                 return CurrentToken().TokenValue();
         }
 
+        /**
+         *       private String TokenValue(int pos)
+         *       returns the value of the token at the specified position
+         *       @param int pos
+         *       @return String
+         */
         private String TokenValue(int pos)
         {
                 return tokens.Token(pos).TokenValue();
         }
 
+        /**
+         *       private JsonTokenType TokenType(int pos)
+         *       returns the type of the token at the specified position
+         *       @param int pos
+         *       @return JsonTokenType
+         */
         private JsonTokenType TokenType(int pos)
         {
                 return tokens.Token(pos).TokenType();
         }
 
+        /**
+         *       private boolean PosInBounds()
+         *       checks if the current position is within bounds and not at file end
+         *       @return boolean
+         */
         private boolean PosInBounds()
         {
                 return pos < tokens.size() && CurrentTokenType() != JsonTokenType.FILE_END;
         }
 
+        /**
+         *       private boolean IsClosingBracket()
+         *       checks if the current token is a closing bracket
+         *       @return boolean
+         */
         private boolean IsClosingBracket()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.CLOSE_BRACKET;
                 return result;
         }
 
+        /**
+         *       private boolean IsClosingCurly()
+         *       checks if the current token is a closing curly brace
+         *       @return boolean
+         */
         private boolean IsClosingCurly()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.CLOSE_CURLY;
                 return result;
         }
 
+        /**
+         *       private boolean IsComma()
+         *       checks if the current token is a comma
+         *       @return boolean
+         */
         private boolean IsComma()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.COMMA;
                 return result;
         }
 
+        /**
+         *       private boolean IsColon()
+         *       checks if the current token is a colon
+         *       @return boolean
+         */
         private boolean IsColon()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.COLON;
                 return result;
         }
         
+        /**
+         *       private boolean IsString()
+         *       checks if the current token is a string
+         *       @return boolean
+         */
         private boolean IsString()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.STRING;
                 return result;
         }
 
+        /**
+         *       private boolean IsComment()
+         *       checks if the current token is a comment
+         *       @return boolean
+         */
         private boolean IsComment()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.COMMENT;
                 return result;
         }
 
+        /**
+         *       private boolean IsWhitespace()
+         *       checks if the current token is whitespace
+         *       @return boolean
+         */
         private boolean IsWhitespace()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.WHITESPACE;
                 return result;                
         }
 
+        /**
+         *       private boolean IsTab()
+         *       checks if the current token is a tab
+         *       @return boolean
+         */
         private boolean IsTab()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.TAB;
                 return result;
         }
 
+        /**
+         *       private boolean IsNewline()
+         *       checks if the current token is a newline
+         *       @return boolean
+         */
         private boolean IsNewline()
         {
                 boolean result = CurrentTokenType() == JsonTokenType.LINE_END;
                 return result;
         }
 
+        /**
+         *       private boolean EndOfFile()
+         *       throws JsonParseException
+         *       checks if the end of the file is reached, throws exception if unexpected tokens remain
+         *       @return boolean
+         */
         private boolean EndOfFile() throws JsonParseException
         {
-                // could be whitespace at the end of the file, sometimes text editors new lines at the end 
                 SkipWhitespace();                
                 boolean isLineEnd = CurrentTokenType() == JsonTokenType.FILE_END;                
                 if (!isLineEnd)
@@ -120,6 +224,11 @@ public class JsonParser
                 return true;        
         }
 
+        /**
+         *       private void SkipWhitespace()
+         *       advances position past any whitespace, tabs, or newlines
+         *       @return void
+         */
         private void SkipWhitespace()
         {
                 while (PosInBounds() && (IsWhitespace() || IsTab() || IsNewline()))
@@ -128,12 +237,23 @@ public class JsonParser
                 }
         }
 
+        /**
+         *       private String TokenValue()
+         *       returns the value of the current token
+         *       @return String
+         */
         private String TokenValue()
         {
                 String key = CurrentToken().TokenValue();
                 return key;
         }
 
+        /**
+         *       private JsonObject ParseObject()
+         *       throws JsonParseException
+         *       parses a JSON object from the token stream
+         *       @return JsonObject
+         */
         private JsonObject ParseObject() throws JsonParseException
         {
                 JsonObject object = new JsonObject();
@@ -154,16 +274,13 @@ public class JsonParser
                 boolean parsingObject = true;
                 while (parsingObject)
                 {       
-                        // make sure were still in bounds
                         if (!PosInBounds())
                         {
                                 throw new JsonParseException("Unterminated object", startPos);
                         }
 
-                        // skip to first key/value pair
                         SkipWhitespace();
 
-                        // make sure where not a comment, advance pos until were not
                         if (IsComment())
                         {
                                 while (IsComment())
@@ -173,49 +290,39 @@ public class JsonParser
                                 }
                         }
 
-                        // check if were at the end of a nested object
                         if (IsClosingCurly())
                         {
                                 parsingObject = false;
                         }
                         else
                         {
-                                // if not closing an object, next token must be a string value for the key so 
-                                // make sure the current token is a string key
                                 if (!IsString())
                                 {
                                         throw new JsonParseException("Expected string key, got '" + CurrentTokenValue() + "'", pos);
                                 }
 
-                                // get key string and type
                                 String key = CurrentTokenValue();
                                 JsonTokenType type = CurrentTokenType();
                                 
-                                // advance pos to what should be colon if not closing curly
                                 AdvancePos();
                                 SkipWhitespace();
 
-                                // if it isnt colon, error
                                 if (!PosInBounds() || !IsColon())
                                 {
                                         throw new JsonParseException("Expected colon after key '" + key + "'" + " type " + type, pos);
                                 }
 
-                                // skip to value 
                                 AdvancePos();
                                 SkipWhitespace();
 
-                                // parse the value
                                 JsonValue value = ParseValue();
                                 object.addProperty(new JsonProperty(key, value));
 
-                                // make sure were still in bounds
                                 if (!PosInBounds())
                                 {
                                         throw new JsonParseException("Unterminated object", startPos);
                                 }
 
-                                // skip any whitespace
                                 SkipWhitespace();
 
                                 if (IsClosingCurly())
@@ -234,6 +341,12 @@ public class JsonParser
                 return object;
         }
 
+        /**
+         *       private JsonArray ParseArray()
+         *       throws JsonParseException
+         *       parses a JSON array from the token stream
+         *       @return JsonArray
+         */
         private JsonArray ParseArray() throws JsonParseException
         {
                 JsonArray array = new JsonArray();
@@ -245,7 +358,6 @@ public class JsonParser
                         throw new JsonParseException("Unterminated array", startPos);
                 }
 
-                // empty json array []
                 if (IsClosingBracket())
                 {
                         AdvancePos();
@@ -262,7 +374,6 @@ public class JsonParser
 
                         SkipWhitespace();
 
-                        // make sure where not a comment, advance pos until were not
                         if (IsComment())
                         {
                                 while (IsComment())
@@ -302,6 +413,12 @@ public class JsonParser
                 return array;
         }
 
+        /**
+         *       private JsonValue ParseValue()
+         *       throws JsonParseException
+         *       parses a single JSON value from the token stream
+         *       @return JsonValue
+         */
         private JsonValue ParseValue() throws JsonParseException
         {                
                 if (!PosInBounds())
@@ -384,6 +501,11 @@ public class JsonParser
                 }                
         }
 
+        /**
+         *       private void VerifyJson()
+         *       prints verification information about the parsed JSON result
+         *       @return void
+         */
         private void VerifyJson()
         {
                 if (parsedResult instanceof JsonObject)
@@ -404,6 +526,12 @@ public class JsonParser
                 System.out.println();
         }
 
+        /**
+         *       private void Parse()
+         *       throws JsonParseException
+         *       parses the token stream into a JSON structure
+         *       @return void
+         */
         private void Parse() throws JsonParseException
         {
                 if (tokens == null || tokens.Empty())
@@ -413,6 +541,11 @@ public class JsonParser
                 parsedResult = ParseObject();
         }
 
+        /**
+         *       public JsonData ParsedData()
+         *       returns the parsed result as a JsonData object
+         *       @return JsonData
+         */
         public JsonData ParsedData()
         {
                 if (parsedResult == null)
@@ -422,6 +555,12 @@ public class JsonParser
                 return new JsonData(parsedResult);
         }
 
+        /**
+         *       public void ParseJson(JsonTokens tokens)
+         *       parses the provided tokens into a JSON structure
+         *       @param JsonTokens tokens
+         *       @return void
+         */
         public void ParseJson(JsonTokens tokens)
         {
                 this.tokens = tokens;
@@ -438,6 +577,11 @@ public class JsonParser
                 }
         }
 
+        /**
+         *       public void ParseJson()
+         *       parses the current token stream into a JSON structure
+         *       @return void
+         */
         public void ParseJson() 
         {
                 try

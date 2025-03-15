@@ -1,33 +1,24 @@
 import Json.*;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-class ThemeRule
-{
-        public String name;
-        public String scope;
-        public String foreground;
-        public ThemeRule()
-        {}
-        public String toString()
-        {
-                return "Name : " + name + ", Scope : " + scope + ", Foreground : " + foreground;
-        }
-}
 
 public class Main
 {
         public static void ParseStudentsData(JsonData jsonData)
         {
+                String Title;
+
                 // create list of students
                 ArrayList<Student> Students = new ArrayList<>();
 
                 // get the base object in the json data
                 JsonObject BaseObject = jsonData.BaseObject();
 
-                // get first property in the json, only one property in students.json (the students list)
-                JsonProperty StudentsArrayProperty = jsonData.GetProperty(BaseObject, 0);
+                // get first property in the json, the title
+                JsonProperty StudentsJsonTitle = jsonData.GetProperty(BaseObject, 0);
+                Title = jsonData.GetPropertyValueAsAString(StudentsJsonTitle);
+
+                // get the array proprety of the students
+                JsonProperty StudentsArrayProperty = jsonData.GetProperty(BaseObject, 1);
 
                 // in students.json, the first property is an array so get the property value as an array
                 JsonArray StudentsArray = jsonData.GetPropertyValueAsAnArray(StudentsArrayProperty);
@@ -77,6 +68,7 @@ public class Main
                         Students.add(NewStudent);
                 }
 
+                System.out.println(Title);
                 // display students info to confirm we got the data correctly
                 for (Student student : Students)
                 {
@@ -84,174 +76,62 @@ public class Main
                 }
         }
 
-        public static void LoadJsonFromFileIntoStringExample()
+        public static void LoadJsonAsStringExample()
         {
-                // create the json objects we need in order to parse
-                JsonFile jsonFile = new JsonFile();
-                JsonTokenizer jsonTokenizer = new JsonTokenizer();
-                JsonParser jsonParser = new JsonParser();
+                System.out.println("Loading json from file into a string and parsing.");
 
-                // open the json file and read as a string
-                jsonFile.OpenAndReadJsonFileAsString("json_files/students.json");
+                // create the pasrser                 
+                JsonParserImpl parser = new JsonParserImpl();
 
-                // tokenize the json string
-                jsonTokenizer.TokenizeJson(jsonFile.FileDataString());
+                // open the JSON file and read as a string
+                parser.OpenFileAndReadAsString("json_files/students.json");
 
-                // display the tokens (optional)
-                jsonTokenizer.DisplayTokens();
+                // tokenize the JSON
+                parser.Tokenize();
 
-                // parse the json
-                jsonParser.ParseJson(jsonTokenizer.Tokens());
+                // display the tokens
+                parser.DisplayTokens();
 
-                // grab the JsonData from the parse
-                JsonData jsonData = jsonParser.ParsedData();
-                
-                // example function of how to parse the JsonData
+                // parser the JSON
+                parser.Parse();
+
+                // grab the parsed JsonData from the parser
+                JsonData jsonData = parser.ParsedData();
+
+                // pass the jsonData to the ParseStudentsData() function
+                // to get view our data
                 ParseStudentsData(jsonData);
 
-                // // serialize the json data and write to file
-                jsonFile.WriteSerializedJsonDataToFile(jsonData, "json_files/students_data.dat");
-
-                // // load seriazized json data back into new json data object
-                jsonFile.ReadSerializedJsonDataFromFile("json_files/students_data.dat");
-                JsonData newJsonData = jsonFile.FileDataSerializedBytes();
-                
-                // // test by parsing the students data again
-                ParseStudentsData(newJsonData);
-        }
-
-        public static void LoadSerializedJson()
-        {
-                JsonFile jsonFile = new JsonFile();
-                
-                // load seriazized json data back into new json data object
-                jsonFile.ReadSerializedJsonDataFromFile("json_files/students_data.dat");
-                JsonData newJsonData = jsonFile.FileDataSerializedBytes();
-                
-                // test by parsing the students data again
-                ParseStudentsData(newJsonData);
-        }
-
-        public static void ParserInterfaceExample()
-        {                
-                JsonParserImpl parser = new JsonParserImpl();
-                parser.OpenFileAndReadAsString("json_files/students.json");
-                parser.Tokenize();
-                parser.DisplayTokens();
-                parser.Parse();
-                JsonData data = parser.ParsedData();
-                ParseStudentsData(data);
+                // serialize the jsonData and write it to file
                 parser.WriteSerializedDataToFile("json_files/students_data.dat");
         }
 
-        public static void ParserInterfaceSerializedExample()
+        public static void LoadSerializedJsonExample()
         {
+                System.out.println("\nLoading json from serialized data file.");
+
+                // create the parser object
                 JsonParserImpl parser = new JsonParserImpl();
+
+                // open and read the serialized json data
                 parser.OpenFileAndReadSerializedBytes("json_files/students_data.dat");
-                JsonData data = parser.SerializedData();
-                ParseStudentsData(data);
-        }
-
-        public static void DisplayParsedJsonTheme(String ThemeName,
-                HashMap<String, String> Variables, 
-                HashMap<String, String> Globals, 
-                ArrayList<ThemeRule> Rules)
-        {
-                System.out.println("Theme Name: " + ThemeName);
-
-                System.out.println("\nVariables");
-                for (String key : Variables.keySet())
-                {
-                        System.out.println(key + ", " + Variables.get(key));
-                }
-
-                System.out.println("\nGlobals");
-                for (String key : Globals.keySet())
-                {
-                        System.out.println(key + ", " + Globals.get(key));
-                }
-
-                System.out.println("\nRules");
-                for (ThemeRule rule : Rules)
-                {
-                        System.out.println(rule.toString());
-                }
-        }
-
-        public static void ParseThemeJson(JsonData jsonData)
-        {
-                String ThemeName;
-                HashMap<String, String> Variables = new HashMap<>();
-                HashMap<String, String> Globals = new HashMap<>();
-                ArrayList<ThemeRule> Rules = new ArrayList<>();
-
-                JsonObject BaseObject = jsonData.BaseObject();
-                JsonProperty ThemeProperty = jsonData.GetProperty(BaseObject, 0);
-                ThemeName = jsonData.GetPropertyValueAsAString(ThemeProperty);
-
-                JsonProperty VariablesProperty = jsonData.GetProperty(BaseObject, 1);
-                JsonObject VariablesObject = jsonData.GetPropertyValueAsAnObject(VariablesProperty);
-                for (int i = 0; i < VariablesObject.size(); i++)
-                {
-                        JsonProperty property = jsonData.GetProperty(VariablesObject, i);
-                        Variables.put(jsonData.GetPropertyKey(property), jsonData.GetPropertyValueAsAString(property));
-                }
-
-                JsonProperty GlobalsProperty = jsonData.GetProperty(BaseObject, 2);
-                JsonObject GlobalsObject = jsonData.GetPropertyValueAsAnObject(GlobalsProperty);
-                for (int i = 0; i < GlobalsObject.size(); i++)
-                {
-                        JsonProperty property = jsonData.GetProperty(GlobalsObject, i);
-                        Globals.put(jsonData.GetPropertyKey(property), jsonData.GetPropertyValueAsAString(property));
-                }
-
-                JsonProperty RulesProperty = jsonData.GetProperty(BaseObject, 3);
-                JsonArray RulesArray = jsonData.GetPropertyValueAsAnArray(RulesProperty);
-                for (int i = 0; i < RulesArray.size(); i++)
-                {
-                        JsonObject RulesObject = jsonData.GetArrayValueAsAnObject(RulesArray, i);                        
-                        ThemeRule NewRule = new ThemeRule();
-
-                        JsonProperty NameProperty = jsonData.GetProperty(RulesObject, 0);
-                        JsonProperty ScopeProperty = jsonData.GetProperty(RulesObject, 1);
-                        JsonProperty ForegroundProperty = jsonData.GetProperty(RulesObject, 2);
-
-                        NewRule.name = jsonData.GetPropertyValueAsAString(NameProperty);
-                        NewRule.scope = jsonData.GetPropertyValueAsAString(ScopeProperty);
-                        NewRule.foreground = jsonData.GetPropertyValueAsAString(ForegroundProperty);
-
-                        Rules.add(NewRule);
-                }
-
-                DisplayParsedJsonTheme(ThemeName, Variables, Globals, Rules);
-        }
-
-        public static void ParseInterfaceExample2()
-        {
-                JsonParserImpl parser = new JsonParserImpl();
-                parser.OpenFileAndReadAsString("json_files/json_test.json");
-                parser.Tokenize();
-                parser.Parse();
-                JsonData jsonData = parser.ParsedData();
-                ParseThemeJson(jsonData);
-                parser.WriteSerializedDataToFile("json_files/json_test_data.dat");
-        }
-        
-        public static void ParseInterfaceExample3()
-        {
-                JsonParserImpl parser = new JsonParserImpl();
-                parser.OpenFileAndReadSerializedBytes("json_files/json_test_data.dat");                
+                
+                // get the json data from the parser
                 JsonData jsonData = parser.SerializedData();
-                ParseThemeJson(jsonData);
+                
+                // test by parsing the students data again
+                ParseStudentsData(jsonData);
         }
 
         public static void main(String[] args)
-        {                        
-                // LoadJsonFromFileIntoStringExample();                
-                // LoadSerializedJson();
-                // ParserInterfaceExample();
-                // ParserInterfaceSerializedExample();
-                // ParseInterfaceExample2();
-                ParseInterfaceExample3();
+        {                       
+                // loads a json file as a string and parses it
+                // then serializes the data and saves it to file
+                LoadJsonAsStringExample();
+
+                // loads the previously saved serialized json data file
+                // no need to parse now, since its just the serialized json data
+                // we can just load and parse the data to get the students information                
+                LoadSerializedJsonExample();
         }       
 }
