@@ -111,7 +111,7 @@ public class JsonParser
         private boolean EndOfFile() throws JsonParseException
         {
                 // could be whitespace at the end of the file, sometimes text editors new lines at the end 
-                SkipWhitespace();
+                SkipWhitespace();                
                 boolean isLineEnd = CurrentTokenType() == JsonTokenType.FILE_END;                
                 if (!isLineEnd)
                 {
@@ -381,7 +381,7 @@ public class JsonParser
                         {
                                 throw new JsonParseException("Unexpected token '" + TokenValue(currPos) + "'", currPos);
                         }
-                }
+                }                
         }
 
         private void VerifyJson()
@@ -410,7 +410,16 @@ public class JsonParser
                 {
                         throw new JsonParseException("No json tokens provided", 0);
                 }
-                parsedResult = ParseValue();
+                parsedResult = ParseObject();
+        }
+
+        public JsonData ParsedData()
+        {
+                if (parsedResult == null)
+                {
+                        return null;
+                }                
+                return new JsonData(parsedResult);
         }
 
         public void ParseJson(JsonTokens tokens)

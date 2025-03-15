@@ -8,28 +8,28 @@ public class JsonTokenizer
         private String jsonInput;
         private int pos;
         private JsonTokens tokens; 
-        private JsonTokenizerFlags flags;
+        private int flags;
 
         public JsonTokenizer()
         {
                 this.pos = 0;
-                this.flags = JsonTokenizerFlags.RELAXED_MODE;
+                this.flags = JsonTokenizerFlags.INCLUDE_NEWLINES.Value();                
         }
 
-        public JsonTokenizer(JsonTokenizerFlags flags)
+        public JsonTokenizer(int flags)
         {
                 this.pos = 0;
                 this.flags = flags;
         }
 
-        public JsonTokenizer(String jsonInput, JsonTokenizerFlags flags)
+        public JsonTokenizer(String jsonInput, int flags)
         {
-                this.jsonInput = jsonInput;
                 this.pos = 0;
+
                 this.flags = flags;
         }
 
-        public void SetFlags(JsonTokenizerFlags flags)
+        public void SetFlags(int flags)
         {
                 this.flags = flags;
         }
@@ -61,10 +61,14 @@ public class JsonTokenizer
                 this.pos = 0;
         }
 
-        private boolean RelaxedMode()
+        private boolean FlagsIncludeWhitespace()
         {
-                boolean result = (flags.ordinal() & JsonTokenizerFlags.RELAXED_MODE.ordinal()) == JsonTokenizerFlags.RELAXED_MODE.ordinal();
-                return result;
+                return (flags & JsonTokenizerFlags.INCLUDE_WHITESPACE.Value()) == JsonTokenizerFlags.INCLUDE_WHITESPACE.Value();
+        }
+
+        private boolean FlagsIncludeNewlines()
+        {
+                return (flags & JsonTokenizerFlags.INCLUDE_NEWLINES.Value()) == JsonTokenizerFlags.INCLUDE_NEWLINES.Value();
         }
 
         private void AdvancePos()
@@ -415,14 +419,6 @@ public class JsonTokenizer
                 else if (IsLetter())
                 {                        
                         return ParseKeyword();
-                        // if (RelaxedMode())
-                        // {
-                        //         return ParseRelaxedUnquotedString();
-                        // }
-                        // else
-                        // {
-                        //         return ParseKeyword();
-                        // }
                 }
                 else
                 {
@@ -441,6 +437,7 @@ public class JsonTokenizer
                                 System.out.println();
                         }                        
                 }
+                System.out.println();
         }
 
         private void ValidateStringValue() throws JsonTokenizeException
@@ -481,29 +478,43 @@ public class JsonTokenizer
                                 }
 
                                 case ' ' ->
-                                {
-                                        tokens.addToken(new JsonToken(JsonTokenType.WHITESPACE, " "));
+                                {        
+                                        if (FlagsIncludeWhitespace())
+                                        {
+                                                tokens.addToken(new JsonToken(JsonTokenType.WHITESPACE, " "));
+                                        }                                
                                         AdvancePos();
                                 }
 
                                 case '\n' ->
                                 {
-                                        tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\n"));
+                                        if (FlagsIncludeNewlines())
+                                        {
+                                                tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\n"));
+                                        }                                        
                                         AdvancePos();
                                 }
 
                                 case '\r' ->
                                 {
+                                        
                                         if (CharAt(pos + 1) == '\n')
                                         {
-                                                tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\r\n"));        
+                                                if (FlagsIncludeNewlines())
+                                                {
+                                                        tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\r\n"));
+                                                }
                                                 AdvancePos(2);
                                         }
                                         else
                                         {
-                                                tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\r"));
+                                                if (FlagsIncludeNewlines())
+                                                {
+                                                        tokens.addToken(new JsonToken(JsonTokenType.LINE_END, "\r"));
+                                                }                                                
                                                 AdvancePos();
                                         }
+                                        
                                 }
 
                                 case '{' ->     
@@ -565,7 +576,7 @@ public class JsonTokenizer
         }
 
         public void TokenizeJson(String json)
-        {                       
+        {                                       
                 this.jsonInput = json;
                 // System.out.println("Testing: " + this.jsonInput);
                 try 

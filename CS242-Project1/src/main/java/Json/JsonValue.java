@@ -3,85 +3,74 @@ package Json;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class JsonValue
+import java.io.Serializable;
+
+abstract class JsonValue implements Serializable
 {
-        // base class    
+        // base class        
+        
+        private static final long SerialVersionUID = 4L;
+
+        public abstract String toString();
 }
 
-class JsonProperty
+class JsonString extends JsonValue implements Serializable
 {
-        String key;
-        JsonValue value;
-        public JsonProperty(String key, JsonValue value)
-        {
-                this.key = key;
-                this.value = value;
-        }
-}
-
-class JsonObject extends JsonValue
-{
-        List<JsonProperty> properties = new ArrayList<>();
-
-        public void addProperty(JsonProperty property)
-        {
-                properties.add(property);
-        }
-
-        public int size()
-        {
-                return properties.size();
-        }
-}
-
-class JsonArray extends JsonValue
-{
-        ArrayList<JsonValue> elements = new ArrayList<>();
-
-        public void addElement(JsonValue element)
-        {
-                elements.add(element);
-        }
-
-        public int size()
-        {
-                return elements.size();
-        }
-}
-
-class JsonString extends JsonValue
-{
+        private static final long SerialVersionUID = 5L;
         String value;
         JsonString(String value)
         {
                 this.value = value;
         }
+
+        public String toString()
+        {
+                return value;
+        }
 }
 
-class JsonNumber extends JsonValue
+class JsonNumber extends JsonValue implements Serializable
 {
+        private static final long SerialVersionUID = 6L;
         String value;
         JsonNumber(String value)
         {
                 this.value = value;
         }
+
+        public String toString()
+        {
+                return value;
+        }
 }
 
-class JsonBoolean extends JsonValue
+class JsonBoolean extends JsonValue implements Serializable
 {
+        private static final long SerialVersionUID = 7L;
         boolean value;
         JsonBoolean(boolean value)
         {
                 this.value = value;
         }
+
+        public String toString()
+        {
+                return Boolean.toString(value);
+        }
 }
 
-class JsonNull extends JsonValue
+class JsonNull extends JsonValue implements Serializable
 {
+        private static final long SerialVersionUID = 8L;
         String value;
         JsonNull(String value)
         {
                 this.value = "null";
+        }
+
+        public String toString()
+        {
+                return value;
         }
 }
 
@@ -92,6 +81,11 @@ class JsonWhitespace extends JsonValue
         {
                 this.value = value;
         }
+
+        public String toString()
+        {
+                return value;
+        }
 }
 
 class JsonTab extends JsonValue
@@ -101,14 +95,24 @@ class JsonTab extends JsonValue
         {
                 this.value = value;
         }
+
+        public String toString()
+        {
+                return value;
+        }
 }
 
-class JsonComment extends JsonValue
+class JsonComment extends JsonValue 
 {
         String value;
         JsonComment(String value)
         {
                   this.value = value;
+        }
+
+        public String toString()
+        {
+                return value;
         }
 }
 
@@ -118,5 +122,10 @@ class JsonNewline extends JsonValue
         JsonNewline(String value)
         {
                 this.value = value;
+        }
+
+        public String toString()
+        {
+                return value;
         }
 }
