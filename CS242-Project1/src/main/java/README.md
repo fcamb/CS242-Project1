@@ -10,17 +10,15 @@ CS242 - Project 1
 Compilation: 
         javac -d bin Main.java
 
-        My project is a recursive descent parser for JSON. It opens a JSON file specified by the user and then tokenizes
 and parses the JSON. The user can create a JsonParserImpl object in order to tokenize and parse the json.
 They can then retrieve the parsed JSON data for use in their own program. This is done through the class "JsonData" which holds the all the data
 that the parser obtained. With the JsonData object, the user has access to functions to pull the actual values of the parsed JSON so that
 they can use it how they need to in their program. 
 
-        The parser can load the JSON file as a string which can then be tokenized/parsed or it can load a serialized binary JsonData object 
+The parser can load the JSON file as a string which can then be tokenized/parsed or it can load a serialized binary JsonData object 
 which the user can use right away in their program. The parser can also write the parsed JSON data to file as a serialized JsonData object.
 
-NOTE: 
-        No tokenizing/parsing is required when the user loads a serialized JsonData object as it is loading a JsonData object directly,
+No tokenizing/parsing is required when the user loads a serialized JsonData object as it is loading a JsonData object directly,
 which is the resulting data of tokenizing/parsing. The user must load the JSON as a string and tokenize/parse it and then save
 it as a serialized JsonData object first of course though. So once the serialized json object exists and is saved to disk, 
 its just like loading any other static data into a program.
